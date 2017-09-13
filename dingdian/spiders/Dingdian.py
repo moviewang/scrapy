@@ -2,6 +2,7 @@ import scrapy
 from bs4 import BeautifulSoup
 from scrapy.http import Request
 from dingdian.items import DingdianItem
+from  dingdian.db.DBConnection import MySqlDB
 
 class MySpider(scrapy.Spider):
     name = 'dingdian'
@@ -44,6 +45,7 @@ class MySpider(scrapy.Spider):
         print('cid:', c_id)
         trs = BeautifulSoup(response.text, 'lxml').find_all('tr', bgcolor='#FFFFFF')
         print('trs:',trs)
+        db = MySqlDB()
         for tr in trs:
             novel_name = tr.find('a', target="_blank").get_text()
             novel_url = tr.find('a')['href']
@@ -56,4 +58,15 @@ class MySpider(scrapy.Spider):
             print('status:', status)
             print('serial_number:', serial_number)
             print('category:', self.ca[int(c_id)])
+
+            '''data persis'''
+            novel = DingdianItem()
+            novel['name'] = novel_name
+            novel['novel_url'] = novel_url
+            novel['status'] = status
+            novel['serial_number'] = serial_number
+            novel['category'] = self.ca[int(c_id)]
+
+            print(novel)
+            db.save_item(novel)
 
